@@ -5,19 +5,21 @@ import base64
 
 def load_and_resize_image(path, max_dim=512) -> str:
     """
-    加载图像 → 压缩尺寸（最长边=max_dim） → 压缩JPEG质量，最后输出base64编码。
-    llama.cpp 多模态要求图像token越少越好，否则容易OOM或slot错误。
+    加载图像 → 长宽缩小一半 → JPEG 压缩 → base64。
+    llama.cpp 对图片 token 数敏感，缩小一半可以显著降低图像 token。
     """
     img = Image.open(path).convert("RGB")
-    # w, h = img.size
+    w, h = img.size
 
-    # # 自动缩放：最长边 = max_dim
-    # scale = max(w, h) / max_dim
-    # if scale > 1.0:
-    #     img = img.resize((int(w / scale), int(h / scale)), Image.LANCZOS)
+    # ↓↓↓ 新增：长宽都缩小一半 ↓↓↓
+    new_w = max(1, w // 2)
+    new_h = max(1, h // 2)
+    img = img.resize((new_w, new_h), Image.LANCZOS)
+    # ↑↑↑ 新增部分 ↑↑↑
 
-    # 压缩为JPEG，质量85（显著减少token）
+    # JPEG 压缩（85 是折中选择）
     buf = io.BytesIO()
     img.save(buf, format="JPEG", quality=85)
     b64 = base64.b64encode(buf.getvalue()).decode("utf-8")
     return b64
+

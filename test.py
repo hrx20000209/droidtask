@@ -1,5 +1,5 @@
 """
-Mobile GUI Agent Sequential Evaluator
+Mobile GUI Agent Sequential Evaluator with Latency Tracking
 """
 
 import base64
@@ -82,6 +82,7 @@ class StepResult:
     step_correct: bool
     prompt: str
     raw_output: str
+    latency: float  # 新增：步骤延迟（秒）
 
 
 @dataclass
@@ -96,6 +97,7 @@ class TaskResult:
     input_correct_count: int
     step_correct_count: int
     task_success: bool
+    total_latency: float  # 新增：任务总延迟（秒）
 
 
 class PromptBuilder:
@@ -443,7 +445,8 @@ class Evaluator:
         gt_record: StepRecord,
         llm_output: Dict[str, Any],
         prompt: str,
-        raw_output: str
+        raw_output: str,
+        latency: float
     ) -> StepResult:
         """评估单个步骤"""
         # 确定 GT 动作类型
@@ -483,7 +486,8 @@ class Evaluator:
             input_correct=input_correct,
             step_correct=step_correct,
             prompt=prompt,
-            raw_output=raw_output
+            raw_output=raw_output,
+            latency=latency
         )
 
     def run_task(self, task_profile: TaskProfile) -> TaskResult:
@@ -496,6 +500,7 @@ class Evaluator:
 
         step_results = []
         state_image_map = self.build_state_image_map(task_profile.app_name)
+        task_start_time = time.time()
 
         for step_idx, gt_record in enumerate(task_profile.records):
             if self.verbose:
@@ -516,7 +521,7 @@ class Evaluator:
                 gt_action = 'end' if gt_record.choice == -1 else ('input' if gt_record.input_text != 'null' else 'tap')
                 print(f"GT:   {gt_action}, id={gt_record.choice}, input={gt_record.input_text}")
 
-            # 调用 LLM
+            # 调用 LLM 并计时
             identifier = f"{task_profile.app_name}/{task_profile.task_name}/step_{step_idx}"
             image_path = self.find_screenshot(gt_record.state_strs, state_image_map)
             if self.verbose and image_path:
@@ -524,21 +529,27 @@ class Evaluator:
             elif self.verbose:
                 self.debug_missing_screenshot(task_profile.app_name, gt_record.state_strs, state_image_map)
                 print("Screenshot: None found for this step")
+            
+            step_start_time = time.time()
             raw_output = self.query_llm(prompt, identifier, image_path=image_path)
+            step_latency = time.time() - step_start_time
 
             # 解析输出
             llm_output = self.parser.parse(raw_output)
 
             if self.verbose:
                 print(f"Pred: {llm_output['action']}, id={llm_output['id']}, input={llm_output['input']}")
+                print(f"Latency: {step_latency:.2f}s")
 
             # 评估
-            step_result = self.evaluate_step(step_idx, gt_record, llm_output, prompt, raw_output)
+            step_result = self.evaluate_step(step_idx, gt_record, llm_output, prompt, raw_output, step_latency)
             step_results.append(step_result)
 
             if self.verbose:
                 status = "✓" if step_result.step_correct else "✗"
                 print(f"Result: {status}")
+
+        task_total_latency = time.time() - task_start_time
 
         # 计算任务级别指标
         action_correct = sum(1 for r in step_results if r.action_correct)
@@ -551,6 +562,8 @@ class Evaluator:
             print(f"\n{'='*60}")
             print(f"Task: {'SUCCESS ✓' if task_success else 'FAILED ✗'}")
             print(f"Steps: {step_correct}/{len(step_results)}")
+            print(f"Total Latency: {task_total_latency:.2f}s")
+            print(f"Average Step Latency: {task_total_latency/len(step_results):.2f}s")
             print(f"{'='*60}")
 
         return TaskResult(
@@ -562,7 +575,8 @@ class Evaluator:
             element_correct_count=element_correct,
             input_correct_count=input_correct,
             step_correct_count=step_correct,
-            task_success=task_success
+            task_success=task_success,
+            total_latency=task_total_latency
         )
 
     def run_evaluation(self) -> Dict[str, Any]:
@@ -627,6 +641,16 @@ class Evaluator:
                     if s.input_correct:
                         input_correct += 1
 
+        # 延迟统计
+        total_latency = sum(r.total_latency for r in self.all_task_results)
+        avg_task_latency = total_latency / total_tasks if total_tasks > 0 else 0
+        
+        all_step_latencies = []
+        for r in self.all_task_results:
+            for s in r.step_results:
+                all_step_latencies.append(s.latency)
+        avg_step_latency = sum(all_step_latencies) / len(all_step_latencies) if all_step_latencies else 0
+
         metrics = {
             'overall': {
                 'action_accuracy': round(action_correct / total_steps, 4) if total_steps > 0 else 0,
@@ -637,7 +661,10 @@ class Evaluator:
                 'total_tasks': total_tasks,
                 'successful_tasks': task_success,
                 'total_steps': total_steps,
-                'correct_steps': step_correct
+                'correct_steps': step_correct,
+                'total_latency': round(total_latency, 2),
+                'avg_task_latency': round(avg_task_latency, 2),
+                'avg_step_latency': round(avg_step_latency, 2)
             }
         }
 
@@ -655,12 +682,15 @@ class Evaluator:
                 'app_name': task_result.app_name,
                 'total_steps': task_result.total_steps,
                 'task_success': task_result.task_success,
+                'total_latency': round(task_result.total_latency, 2),
+                'avg_step_latency': round(task_result.total_latency / task_result.total_steps, 2) if task_result.total_steps > 0 else 0,
                 'steps': [
                     {
                         'step': s.step_idx,
                         'gt': {'action': s.gt_action, 'id': s.gt_id, 'input': s.gt_input},
                         'pred': {'action': s.pred_action, 'id': s.pred_id, 'input': s.pred_input},
-                        'correct': s.step_correct
+                        'correct': s.step_correct,
+                        'latency': round(s.latency, 2)
                     }
                     for s in task_result.step_results
                 ]
@@ -680,6 +710,10 @@ class Evaluator:
         print(f"Task Success Rate:  {metrics['overall']['task_success_rate']:.2%}")
         print(f"\nSteps:  {metrics['overall']['correct_steps']}/{metrics['overall']['total_steps']}")
         print(f"Tasks:  {metrics['overall']['successful_tasks']}/{metrics['overall']['total_tasks']}")
+        print(f"\n--- Latency Statistics ---")
+        print(f"Total Latency:           {metrics['overall']['total_latency']:.2f}s")
+        print(f"Avg Task Latency:        {metrics['overall']['avg_task_latency']:.2f}s")
+        print(f"Avg Step Latency:        {metrics['overall']['avg_step_latency']:.2f}s")
         print(f"{'='*60}\n")
 
 
