@@ -4,13 +4,14 @@ INSTANCE_NAME="gpt-4"
 ev = Evaluator(
     data_folder="data/user_tasks",
     log_root="logs",
-    load_ckpt=True,
+    load_ckpt=False,
     memory_folder="data/navigation",
     use_memory=True,
     prompt_config="data/prompt.yaml",
     external_mem="data/ex_mem.json",
     instance_name=INSTANCE_NAME,
-    specify_app=["applauncher", "camera", "calendar", "clock", "contacts", "dialer", "filemanager", "gallery", "messenger", "musicplayer", "notes", "voicerecorder", "firefox"]
+    specify_app=["clock"]
+    # specify_app=["applauncher", "camera", "calendar", "clock", "contacts", "dialer", "filemanager", "gallery", "messenger", "musicplayer", "notes", "voicerecorder", "firefox"]
 )
 
 all_results = ev.evaluate()    

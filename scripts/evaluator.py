@@ -10,7 +10,7 @@ import shutil
 import yaml
 from rich import print
 from rich.console import Console
-from .utils import queryGPT
+from .utils import queryGPT, queryLlamaCpp
 import tiktoken
 
 CONSOLE = Console()
@@ -296,7 +296,7 @@ class Evaluator:
                         if not self.disable_query:
                             futures_to_data[
                                 executor.submit(
-                                    queryGPT,
+                                    queryLlamaCpp,
                                     prompt=prompt,
                                     console=CONSOLE,
                                     identifier=f"{task_hash}, step[{idx}]",

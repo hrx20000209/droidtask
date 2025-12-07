@@ -100,3 +100,69 @@ def queryGPT(prompt: str, console: Console | None = None, identifier="", retry_t
         return None
     return res
 
+
+def queryLlamaCpp(
+    prompt: str,
+    console: Console | None = None,
+    identifier: str = "",
+    retry_times: int = 12,
+    api_url: str = "http://localhost:8080/v1/chat/completions",
+    temperature: float = 0.0,
+    max_tokens: int = 300,
+):
+    """
+    替代原 queryGPT 的本地 LLM Chat 接口，
+    可直接在 DroidTask Evaluator 中使用。
+    """
+
+    # === 构建 llama.cpp 的 chat 格式 ===
+    messages = [
+        {
+            "role": "user",
+            "content": [
+                {"type": "text", "text": prompt}
+            ]
+        }
+    ]
+
+    data = {
+        "messages": messages,
+        "temperature": temperature,
+        "max_tokens": max_tokens,
+        "stream": False
+    }
+
+    retry = 0
+    while retry < retry_times:
+        try:
+            res = requests.post(api_url, json=data, timeout=30)
+            if res.status_code != 200:
+                raise RuntimeError(f"Local LLM error: {res.text}")
+
+            js = res.json()
+            output = js["choices"][0]["message"]["content"]
+
+            if identifier:
+                if retry != 0:
+                    console.log(
+                        f"Task [green bold]{identifier}[/green bold] finished after {retry} retries."
+                    )
+                else:
+                    console.log(
+                        f"Task [cyan]{identifier}[/cyan] finished without retry."
+                    )
+
+            return output
+
+        except Exception as e:
+            retry += 1
+            if identifier:
+                console.log(
+                    f"Task [yellow]{identifier}[/yellow] retry [yellow]{retry}[/yellow] times. Error: {e}"
+                )
+            time.sleep(random.uniform(0.5 + 1 * retry, 1.5 + 1 * retry))
+
+    if identifier:
+        console.log(f"Task [red]{identifier}[/red] fails after retries.")
+
+    return None

@@ -1,0 +1,715 @@
+{
+  "metrics": {
+    "overall": {
+      "action_accuracy": 0.3953,
+      "element_accuracy": 0.2326,
+      "input_accuracy": 1.0,
+      "step_accuracy": 0.2326,
+      "task_success_rate": 0.0,
+      "total_tasks": 12,
+      "successful_tasks": 0,
+      "total_steps": 43,
+      "correct_steps": 10
+    }
+  },
+  "details": [
+    {
+      "task_name": "change alarm max reminder duration to 1 minute",
+      "app_name": "clock",
+      "total_steps": 4,
+      "task_success": false,
+      "steps": [
+        {
+          "step": 0,
+          "gt": {
+            "action": "tap",
+            "id": 1,
+            "input": "null"
+          },
+          "pred": {
+            "action": "tap",
+            "id": 7,
+            "input": "N/A"
+          },
+          "correct": false
+        },
+        {
+          "step": 1,
+          "gt": {
+            "action": "tap",
+            "id": 9,
+            "input": "null"
+          },
+          "pred": {
+            "action": "end",
+            "id": -1,
+            "input": "N/A"
+          },
+          "correct": false
+        },
+        {
+          "step": 2,
+          "gt": {
+            "action": "tap",
+            "id": 0,
+            "input": "null"
+          },
+          "pred": {
+            "action": "end",
+            "id": -1,
+            "input": "N/A"
+          },
+          "correct": false
+        },
+        {
+          "step": 3,
+          "gt": {
+            "action": "end",
+            "id": -1,
+            "input": "null"
+          },
+          "pred": {
+            "action": "end",
+            "id": -1,
+            "input": "N/A"
+          },
+          "correct": true
+        }
+      ]
+    },
+    {
+      "task_name": "disable 'start week on sunday'",
+      "app_name": "clock",
+      "total_steps": 3,
+      "task_success": false,
+      "steps": [
+        {
+          "step": 0,
+          "gt": {
+            "action": "tap",
+            "id": 1,
+            "input": "null"
+          },
+          "pred": {
+            "action": "tap",
+            "id": 2,
+            "input": "N/A"
+          },
+          "correct": false
+        },
+        {
+          "step": 1,
+          "gt": {
+            "action": "tap",
+            "id": 7,
+            "input": "null"
+          },
+          "pred": {
+            "action": "end",
+            "id": -1,
+            "input": "N/A"
+          },
+          "correct": false
+        },
+        {
+          "step": 2,
+          "gt": {
+            "action": "end",
+            "id": -1,
+            "input": "null"
+          },
+          "pred": {
+            "action": "end",
+            "id": -1,
+            "input": "N/A"
+          },
+          "correct": true
+        }
+      ]
+    },
+    {
+      "task_name": "change timer max reminder duration to 5 minutes",
+      "app_name": "clock",
+      "total_steps": 4,
+      "task_success": false,
+      "steps": [
+        {
+          "step": 0,
+          "gt": {
+            "action": "tap",
+            "id": 1,
+            "input": "null"
+          },
+          "pred": {
+            "action": "end",
+            "id": -1,
+            "input": "N/A"
+          },
+          "correct": false
+        },
+        {
+          "step": 1,
+          "gt": {
+            "action": "tap",
+            "id": 15,
+            "input": "null"
+          },
+          "pred": {
+            "action": "tap",
+            "id": 12,
+            "input": "5"
+          },
+          "correct": false
+        },
+        {
+          "step": 2,
+          "gt": {
+            "action": "tap",
+            "id": 1,
+            "input": "null"
+          },
+          "pred": {
+            "action": "tap",
+            "id": 2,
+            "input": "5"
+          },
+          "correct": false
+        },
+        {
+          "step": 3,
+          "gt": {
+            "action": "end",
+            "id": -1,
+            "input": "null"
+          },
+          "pred": {
+            "action": "end",
+            "id": -1,
+            "input": "N/A"
+          },
+          "correct": true
+        }
+      ]
+    },
+    {
+      "task_name": "turn off increase volume gradually",
+      "app_name": "clock",
+      "total_steps": 3,
+      "task_success": false,
+      "steps": [
+        {
+          "step": 0,
+          "gt": {
+            "action": "tap",
+            "id": 1,
+            "input": "null"
+          },
+          "pred": {
+            "action": "end",
+            "id": -1,
+            "input": "N/A"
+          },
+          "correct": false
+        },
+        {
+          "step": 1,
+          "gt": {
+            "action": "tap",
+            "id": 10,
+            "input": "null"
+          },
+          "pred": {
+            "action": "tap",
+            "id": 12,
+            "input": "N/A"
+          },
+          "correct": false
+        },
+        {
+          "step": 2,
+          "gt": {
+            "action": "end",
+            "id": -1,
+            "input": "null"
+          },
+          "pred": {
+            "action": "tap",
+            "id": 15,
+            "input": "N/A"
+          },
+          "correct": false
+        }
+      ]
+    },
+    {
+      "task_name": "turn off always use same snooze time",
+      "app_name": "clock",
+      "total_steps": 3,
+      "task_success": false,
+      "steps": [
+        {
+          "step": 0,
+          "gt": {
+            "action": "tap",
+            "id": 1,
+            "input": "null"
+          },
+          "pred": {
+            "action": "end",
+            "id": -1,
+            "input": "N/A"
+          },
+          "correct": false
+        },
+        {
+          "step": 1,
+          "gt": {
+            "action": "tap",
+            "id": 11,
+            "input": "null"
+          },
+          "pred": {
+            "action": "end",
+            "id": -1,
+            "input": "N/A"
+          },
+          "correct": false
+        },
+        {
+          "step": 2,
+          "gt": {
+            "action": "end",
+            "id": -1,
+            "input": "null"
+          },
+          "pred": {
+            "action": "tap",
+            "id": 11,
+            "input": "N/A"
+          },
+          "correct": false
+        }
+      ]
+    },
+    {
+      "task_name": "Do not prevent the phone from entering sleep mode when the application is running in the foreground",
+      "app_name": "clock",
+      "total_steps": 3,
+      "task_success": false,
+      "steps": [
+        {
+          "step": 0,
+          "gt": {
+            "action": "tap",
+            "id": 1,
+            "input": "null"
+          },
+          "pred": {
+            "action": "tap",
+            "id": 2,
+            "input": "N/A"
+          },
+          "correct": false
+        },
+        {
+          "step": 1,
+          "gt": {
+            "action": "tap",
+            "id": 6,
+            "input": "null"
+          },
+          "pred": {
+            "action": "end",
+            "id": -1,
+            "input": "N/A"
+          },
+          "correct": false
+        },
+        {
+          "step": 2,
+          "gt": {
+            "action": "end",
+            "id": -1,
+            "input": "null"
+          },
+          "pred": {
+            "action": "end",
+            "id": -1,
+            "input": "N/A"
+          },
+          "correct": true
+        }
+      ]
+    },
+    {
+      "task_name": "open the clock page",
+      "app_name": "clock",
+      "total_steps": 2,
+      "task_success": false,
+      "steps": [
+        {
+          "step": 0,
+          "gt": {
+            "action": "tap",
+            "id": 5,
+            "input": "null"
+          },
+          "pred": {
+            "action": "end",
+            "id": -1,
+            "input": "N/A"
+          },
+          "correct": false
+        },
+        {
+          "step": 1,
+          "gt": {
+            "action": "end",
+            "id": -1,
+            "input": "null"
+          },
+          "pred": {
+            "action": "end",
+            "id": -1,
+            "input": "N/A"
+          },
+          "correct": true
+        }
+      ]
+    },
+    {
+      "task_name": "turn on the '7:00 am' alarm clock vibration function",
+      "app_name": "clock",
+      "total_steps": 6,
+      "task_success": false,
+      "steps": [
+        {
+          "step": 0,
+          "gt": {
+            "action": "tap",
+            "id": 6,
+            "input": "null"
+          },
+          "pred": {
+            "action": "end",
+            "id": -1,
+            "input": "N/A"
+          },
+          "correct": false
+        },
+        {
+          "step": 1,
+          "gt": {
+            "action": "tap",
+            "id": 4,
+            "input": "null"
+          },
+          "pred": {
+            "action": "end",
+            "id": -1,
+            "input": "N/A"
+          },
+          "correct": false
+        },
+        {
+          "step": 2,
+          "gt": {
+            "action": "tap",
+            "id": 8,
+            "input": "null"
+          },
+          "pred": {
+            "action": "end",
+            "id": -1,
+            "input": "N/A"
+          },
+          "correct": false
+        },
+        {
+          "step": 3,
+          "gt": {
+            "action": "tap",
+            "id": 12,
+            "input": "null"
+          },
+          "pred": {
+            "action": "end",
+            "id": -1,
+            "input": "N/A"
+          },
+          "correct": false
+        },
+        {
+          "step": 4,
+          "gt": {
+            "action": "tap",
+            "id": 1,
+            "input": "null"
+          },
+          "pred": {
+            "action": "end",
+            "id": -1,
+            "input": "N/A"
+          },
+          "correct": false
+        },
+        {
+          "step": 5,
+          "gt": {
+            "action": "end",
+            "id": -1,
+            "input": "null"
+          },
+          "pred": {
+            "action": "end",
+            "id": -1,
+            "input": "N/A"
+          },
+          "correct": true
+        }
+      ]
+    },
+    {
+      "task_name": "Set the sorting order for alarms by 'Day and Alarm time'",
+      "app_name": "clock",
+      "total_steps": 5,
+      "task_success": false,
+      "steps": [
+        {
+          "step": 0,
+          "gt": {
+            "action": "tap",
+            "id": 6,
+            "input": "null"
+          },
+          "pred": {
+            "action": "tap",
+            "id": 6,
+            "input": "set alarm by day and alarm time"
+          },
+          "correct": true
+        },
+        {
+          "step": 1,
+          "gt": {
+            "action": "tap",
+            "id": 0,
+            "input": "null"
+          },
+          "pred": {
+            "action": "end",
+            "id": -1,
+            "input": "N/A"
+          },
+          "correct": false
+        },
+        {
+          "step": 2,
+          "gt": {
+            "action": "tap",
+            "id": 3,
+            "input": "null"
+          },
+          "pred": {
+            "action": "end",
+            "id": -1,
+            "input": "N/A"
+          },
+          "correct": false
+        },
+        {
+          "step": 3,
+          "gt": {
+            "action": "tap",
+            "id": 5,
+            "input": "null"
+          },
+          "pred": {
+            "action": "end",
+            "id": -1,
+            "input": "N/A"
+          },
+          "correct": false
+        },
+        {
+          "step": 4,
+          "gt": {
+            "action": "end",
+            "id": -1,
+            "input": "null"
+          },
+          "pred": {
+            "action": "end",
+            "id": -1,
+            "input": "N/A"
+          },
+          "correct": true
+        }
+      ]
+    },
+    {
+      "task_name": "Set the snooze time to 5 minute",
+      "app_name": "clock",
+      "total_steps": 4,
+      "task_success": false,
+      "steps": [
+        {
+          "step": 0,
+          "gt": {
+            "action": "tap",
+            "id": 1,
+            "input": "null"
+          },
+          "pred": {
+            "action": "end",
+            "id": -1,
+            "input": "N/A"
+          },
+          "correct": false
+        },
+        {
+          "step": 1,
+          "gt": {
+            "action": "tap",
+            "id": 13,
+            "input": "null"
+          },
+          "pred": {
+            "action": "end",
+            "id": -1,
+            "input": "N/A"
+          },
+          "correct": false
+        },
+        {
+          "step": 2,
+          "gt": {
+            "action": "tap",
+            "id": 1,
+            "input": "null"
+          },
+          "pred": {
+            "action": "end",
+            "id": -1,
+            "input": "N/A"
+          },
+          "correct": false
+        },
+        {
+          "step": 3,
+          "gt": {
+            "action": "end",
+            "id": -1,
+            "input": "null"
+          },
+          "pred": {
+            "action": "tap",
+            "id": 15,
+            "input": "5"
+          },
+          "correct": false
+        }
+      ]
+    },
+    {
+      "task_name": "add a new timer of 5:00",
+      "app_name": "clock",
+      "total_steps": 3,
+      "task_success": false,
+      "steps": [
+        {
+          "step": 0,
+          "gt": {
+            "action": "tap",
+            "id": 4,
+            "input": "null"
+          },
+          "pred": {
+            "action": "end",
+            "id": -1,
+            "input": "N/A"
+          },
+          "correct": false
+        },
+        {
+          "step": 1,
+          "gt": {
+            "action": "tap",
+            "id": 5,
+            "input": "null"
+          },
+          "pred": {
+            "action": "end",
+            "id": -1,
+            "input": "N/A"
+          },
+          "correct": false
+        },
+        {
+          "step": 2,
+          "gt": {
+            "action": "end",
+            "id": -1,
+            "input": "null"
+          },
+          "pred": {
+            "action": "end",
+            "id": -1,
+            "input": "N/A"
+          },
+          "correct": true
+        }
+      ]
+    },
+    {
+      "task_name": "check the frequently asked questions",
+      "app_name": "clock",
+      "total_steps": 3,
+      "task_success": false,
+      "steps": [
+        {
+          "step": 0,
+          "gt": {
+            "action": "tap",
+            "id": 2,
+            "input": "null"
+          },
+          "pred": {
+            "action": "tap",
+            "id": 0,
+            "input": "<text or N/A>"
+          },
+          "correct": false
+        },
+        {
+          "step": 1,
+          "gt": {
+            "action": "tap",
+            "id": 2,
+            "input": "null"
+          },
+          "pred": {
+            "action": "end",
+            "id": -1,
+            "input": "N/A"
+          },
+          "correct": false
+        },
+        {
+          "step": 2,
+          "gt": {
+            "action": "end",
+            "id": -1,
+            "input": "null"
+          },
+          "pred": {
+            "action": "end",
+            "id": -1,
+            "input": "N/A"
+          },
+          "correct": true
+        }
+      ]
+    }
+  ]
+}
