@@ -92,3 +92,43 @@ clock/change timer max reminder duration to 5 minutes/step_3: screen_2023-07-08_
 clock/change alarm max reminder duration to 1 minute/step_0: screen_2023-07-08_180333.png
 clock/change alarm max reminder duration to 1 minute/step_1: screen_2023-07-08_175440.png
 clock/change alarm max reminder duration to 1 minute/step_2: screen_2023-07-08_175500.png
+clock/change alarm max reminder duration to 1 minute/step_3: screen_2023-07-03_114734.png
+clock/disable 'start week on sunday'/step_0: screen_2023-07-08_180333.png
+clock/disable 'start week on sunday'/step_1: screen_2023-07-08_175440.png
+clock/disable 'start week on sunday'/step_2: screen_2023-07-03_114340.png
+clock/change timer max reminder duration to 5 minutes/step_0: screen_2023-07-08_180333.png
+clock/change timer max reminder duration to 5 minutes/step_1: screen_2023-07-08_175440.png
+clock/change timer max reminder duration to 5 minutes/step_2: screen_2023-07-08_175630.png
+clock/change timer max reminder duration to 5 minutes/step_3: screen_2023-07-08_175440.png
+clock/turn off increase volume gradually/step_0: screen_2023-07-08_180333.png
+clock/turn off increase volume gradually/step_1: screen_2023-07-08_175440.png
+clock/turn off increase volume gradually/step_2: screen_2023-07-03_120044.png
+clock/turn off always use same snooze time/step_0: screen_2023-07-08_180333.png
+clock/turn off always use same snooze time/step_1: screen_2023-07-08_175440.png
+clock/turn off always use same snooze time/step_2: screen_2023-07-03_120803.png
+clock/Do not prevent the phone from entering sleep mode when the application is running in the foreground/step_0: screen_2023-07-08_180333.png
+clock/Do not prevent the phone from entering sleep mode when the application is running in the foreground/step_1: screen_2023-07-08_175440.png
+clock/Do not prevent the phone from entering sleep mode when the application is running in the foreground/step_2: screen_2023-07-03_120946.png
+clock/open the clock page/step_0: screen_2023-07-08_180333.png
+clock/open the clock page/step_1: screen_2023-07-08_180638.png
+clock/turn on the '7:00 am' alarm clock vibration function/step_0: screen_2023-07-08_180333.png
+clock/turn on the '7:00 am' alarm clock vibration function/step_1: screen_2023-07-08_180700.png
+clock/turn on the '7:00 am' alarm clock vibration function/step_2: screen_2023-07-08_175835.png
+clock/turn on the '7:00 am' alarm clock vibration function/step_3: screen_2023-07-03_112051.png
+clock/turn on the '7:00 am' alarm clock vibration function/step_4: screen_2023-07-08_175157.png
+clock/turn on the '7:00 am' alarm clock vibration function/step_5: screen_2023-07-08_175203.png
+clock/Set the sorting order for alarms by 'Day and Alarm time'/step_0: screen_2023-07-08_180333.png
+clock/Set the sorting order for alarms by 'Day and Alarm time'/step_1: screen_2023-07-08_180700.png
+clock/Set the sorting order for alarms by 'Day and Alarm time'/step_2: screen_2023-07-03_112554.png
+clock/Set the sorting order for alarms by 'Day and Alarm time'/step_3: screen_2023-07-03_112620.png
+clock/Set the sorting order for alarms by 'Day and Alarm time'/step_4: screen_2023-07-03_112629.png
+clock/Set the snooze time to 5 minute/step_0: screen_2023-07-08_180333.png
+clock/Set the snooze time to 5 minute/step_1: screen_2023-07-08_175440.png
+clock/Set the snooze time to 5 minute/step_2: screen_2023-07-08_175602.png
+clock/Set the snooze time to 5 minute/step_3: screen_2023-07-08_175440.png
+clock/add a new timer of 5:00/step_0: screen_2023-07-08_180333.png
+clock/add a new timer of 5:00/step_1: screen_2023-07-08_180356.png
+clock/add a new timer of 5:00/step_2: screen_2023-07-03_113433.png
+clock/check the frequently asked questions/step_0: screen_2023-07-08_180333.png
+clock/check the frequently asked questions/step_1: screen_2023-07-03_114020.png
+clock/check the frequently asked questions/step_2: screen_2023-07-03_114052.png

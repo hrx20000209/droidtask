@@ -12,9 +12,10 @@ def load_and_resize_image(path, max_dim=512) -> str:
     w, h = img.size
 
     # ↓↓↓ 新增：长宽都缩小一半 ↓↓↓
-    new_w = max(1, w // 2)
-    new_h = max(1, h // 2)
+    new_w = max(1, w // 4)
+    new_h = max(1, h // 4)
     img = img.resize((new_w, new_h), Image.LANCZOS)
+    print(f"Image Size: {new_w}x{new_h}")
     # ↑↑↑ 新增部分 ↑↑↑
 
     # JPEG 压缩（85 是折中选择）
