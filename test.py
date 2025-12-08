@@ -12,7 +12,7 @@ from typing import Dict, List, Optional, Any
 from dataclasses import dataclass
 import yaml
 from datetime import datetime
-from utils import load_and_resize_image, crop_and_reassemble
+from utils import load_and_resize_image, crop_and_reassemble, extract_json
 
 
 @dataclass
@@ -103,25 +103,37 @@ class PromptBuilder:
     """构造 prompt"""
 
     def build_prompt(self, task_name: str, app_name: str, state: str, history: str) -> str:
-        """构造完整 prompt"""
         prompt_text = (
-            "You are a mobile GUI agent. Analyze the UI and determine the next action.\n\n"
+            "You are a mobile GUI agent.\n"
+            "You MUST output ONLY a JSON object. Do not include any explanation, reasoning, "
+            "comments, natural language sentences, <think> blocks, or Markdown.\n"
+            "Your output MUST begin with '{' and end with '}'.\n\n"
+
             f"# Task\n{task_name}\n\n"
             f"# Action History\n{history}\n\n"
             f"# Current UI State\n{state}\n\n"
-            "# Instructions\n"
-            "Respond in JSON format:\n"
+
+            "# Output Format (strict):\n"
             "{\n"
-            '  "finished": "yes/no",\n'
-            '  "id": <element_id>,\n'
-            '  "action": "tap/input",\n'
+            '  "finished": "yes" | "no",\n'
+            '  "id": <element_id or -1>,\n'
+            '  "action": "tap" | "input",\n'
             '  "input_text": "<text or N/A>"\n'
             "}\n\n"
-            "Rules:\n"
-            '- If task is complete: {"finished": "yes", "id": -1}\n'
-            '- For tap: {"finished": "no", "id": <num>, "action": "tap", "input_text": "N/A"}\n'
-            '- For input: {"finished": "no", "id": <num>, "action": "input", "input_text": "<text>"}\n\n'
-            "Your JSON response:"
+
+            "# Rules:\n"
+            '1. If the task is completed, output exactly:\n'
+            '   {"finished": "yes", "id": -1, "action": "tap", "input_text": "N/A"}\n'
+            "2. For a tap action:\n"
+            '   {"finished": "no", "id": <id>, "action": "tap", "input_text": "N/A"}\n'
+            "3. For input:\n"
+            '   {"finished": "no", "id": <id>, "action": "input", "input_text": "<content>"}\n\n'
+
+            "FAILURE CONDITION:\n"
+            "- If you output anything that is not a valid JSON object, the agent will fail. "
+            "So output ONLY the JSON object.\n\n"
+
+            "Now output the JSON object:"
         )
         return prompt_text
 

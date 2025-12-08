@@ -1,5 +1,6 @@
 from PIL import Image
 import io
+import json
 import base64
 
 
@@ -89,3 +90,28 @@ def crop_and_reassemble(path, keep=("tl","tr")) -> str:
     b64 = base64.b64encode(buf.getvalue()).decode("utf-8")
 
     return b64
+
+
+def extract_json(text: str):
+    """
+    提取 LLM 输出中的 JSON（从第一个 { 开始）。
+    自动去掉 <think> ... 等设置。
+    """
+    # 找到第一个 '{'
+    idx = text.find("{")
+    if idx == -1:
+        raise ValueError("No JSON object found.")
+
+    json_str = text[idx:]
+
+    # 尝试解析
+    try:
+        return json.loads(json_str)
+    except json.JSONDecodeError:
+        # 如果末尾有奇怪的内容，尝试只保留到最后一个 '}'
+        last = json_str.rfind("}")
+        if last != -1:
+            json_str = json_str[:last+1]
+            return json.loads(json_str)
+
+        raise
