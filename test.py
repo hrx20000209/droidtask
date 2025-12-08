@@ -12,29 +12,7 @@ from typing import Dict, List, Optional, Any
 from dataclasses import dataclass
 import yaml
 from datetime import datetime
-
-
-def load_and_resize_image(image_path: Path, max_size: int = 800) -> str:
-    """
-    加载并压缩图片为 base64 字符串
-    """
-    from PIL import Image
-    import io
-
-    img = Image.open(image_path)
-
-    # 等比例缩放
-    if max(img.size) > max_size:
-        ratio = max_size / max(img.size)
-        new_size = tuple(int(dim * ratio) for dim in img.size)
-        img = img.resize(new_size, Image.Resampling.LANCZOS)
-
-    # 转换为 JPEG 并压缩
-    buffer = io.BytesIO()
-    img.convert('RGB').save(buffer, format='JPEG', quality=85)
-    buffer.seek(0)
-
-    return base64.b64encode(buffer.read()).decode('utf-8')
+from utils import load_and_resize_image
 
 
 @dataclass
