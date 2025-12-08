@@ -75,3 +75,20 @@ clock/change alarm max reminder duration to 1 minute/step_3: screen_2023-07-03_1
 clock/disable 'start week on sunday'/step_0: screen_2023-07-08_180333.png
 clock/disable 'start week on sunday'/step_1: screen_2023-07-08_175440.png
 clock/disable 'start week on sunday'/step_2: screen_2023-07-03_114340.png
+clock/change alarm max reminder duration to 1 minute/step_0: screen_2023-07-08_180333.png
+clock/change alarm max reminder duration to 1 minute/step_1: screen_2023-07-08_175440.png
+clock/change alarm max reminder duration to 1 minute/step_0: screen_2023-07-08_180333.png
+clock/change alarm max reminder duration to 1 minute/step_0: screen_2023-07-08_180333.png
+clock/change alarm max reminder duration to 1 minute/step_1: screen_2023-07-08_175440.png
+clock/change alarm max reminder duration to 1 minute/step_2: screen_2023-07-08_175500.png
+clock/change alarm max reminder duration to 1 minute/step_3: screen_2023-07-03_114734.png
+clock/disable 'start week on sunday'/step_0: screen_2023-07-08_180333.png
+clock/disable 'start week on sunday'/step_1: screen_2023-07-08_175440.png
+clock/disable 'start week on sunday'/step_2: screen_2023-07-03_114340.png
+clock/change timer max reminder duration to 5 minutes/step_0: screen_2023-07-08_180333.png
+clock/change timer max reminder duration to 5 minutes/step_1: screen_2023-07-08_175440.png
+clock/change timer max reminder duration to 5 minutes/step_2: screen_2023-07-08_175630.png
+clock/change timer max reminder duration to 5 minutes/step_3: screen_2023-07-08_175440.png
+clock/change alarm max reminder duration to 1 minute/step_0: screen_2023-07-08_180333.png
+clock/change alarm max reminder duration to 1 minute/step_1: screen_2023-07-08_175440.png
+clock/change alarm max reminder duration to 1 minute/step_2: screen_2023-07-08_175500.png

@@ -6,14 +6,35 @@ import base64
 import json
 import re
 import time
-import random
 import requests
 from pathlib import Path
 from typing import Dict, List, Optional, Any
 from dataclasses import dataclass
 import yaml
 from datetime import datetime
-from utils import load_and_resize_image
+
+
+def load_and_resize_image(image_path: Path, max_size: int = 800) -> str:
+    """
+    加载并压缩图片为 base64 字符串
+    """
+    from PIL import Image
+    import io
+
+    img = Image.open(image_path)
+
+    # 等比例缩放
+    if max(img.size) > max_size:
+        ratio = max_size / max(img.size)
+        new_size = tuple(int(dim * ratio) for dim in img.size)
+        img = img.resize(new_size, Image.Resampling.LANCZOS)
+
+    # 转换为 JPEG 并压缩
+    buffer = io.BytesIO()
+    img.convert('RGB').save(buffer, format='JPEG', quality=85)
+    buffer.seek(0)
+
+    return base64.b64encode(buffer.read()).decode('utf-8')
 
 
 @dataclass
@@ -38,11 +59,9 @@ class TaskProfile:
         with open(yaml_path, 'r', encoding='utf-8') as f:
             data = yaml.safe_load(f)
 
-        # 获取任务名
         task_name = data.get('task_name', '') or data.get('task', '') or yaml_path.stem
-
-        # 获取 records
         records_data = data.get('records', [])
+
         if not records_data:
             return None
 
@@ -52,12 +71,14 @@ class TaskProfile:
             choice = r.get('Choice', -1)
             input_text = r.get('Input', 'null')
             state_str_raw = r.get('state_str', [])
+
             if isinstance(state_str_raw, str):
                 state_strs = [state_str_raw] if state_str_raw else []
             elif isinstance(state_str_raw, list):
                 state_strs = [s for s in state_str_raw if s]
             else:
                 state_strs = []
+
             records.append(StepRecord(state, choice, input_text, state_strs))
 
         if not records:
@@ -82,7 +103,7 @@ class StepResult:
     step_correct: bool
     prompt: str
     raw_output: str
-    latency: float  # 新增：步骤延迟（秒）
+    latency: float
 
 
 @dataclass
@@ -97,7 +118,7 @@ class TaskResult:
     input_correct_count: int
     step_correct_count: int
     task_success: bool
-    total_latency: float  # 新增：任务总延迟（秒）
+    total_latency: float
 
 
 class PromptBuilder:
@@ -105,32 +126,26 @@ class PromptBuilder:
 
     def build_prompt(self, task_name: str, app_name: str, state: str, history: str) -> str:
         """构造完整 prompt"""
-        return f"""You are a mobile GUI agent. Analyze the UI and determine the next action.
-
-# Task
-{task_name}
-
-# Action History
-{history}
-
-# Current UI State
-{state}
-
-# Instructions
-Respond in JSON format:
-{{
-  "finished": "yes/no",
-  "id": <element_id>,
-  "action": "tap/input",
-  "input_text": "<text or N/A>"
-}}
-
-Rules:
-- If task is complete: {{"finished": "yes", "id": -1}}
-- For tap: {{"finished": "no", "id": <num>, "action": "tap", "input_text": "N/A"}}
-- For input: {{"finished": "no", "id": <num>, "action": "input", "input_text": "<text>"}}
-
-Your JSON response:"""
+        prompt_text = (
+            "You are a mobile GUI agent. Analyze the UI and determine the next action.\n\n"
+            f"# Task\n{task_name}\n\n"
+            f"# Action History\n{history}\n\n"
+            f"# Current UI State\n{state}\n\n"
+            "# Instructions\n"
+            "Respond in JSON format:\n"
+            "{\n"
+            '  "finished": "yes/no",\n'
+            '  "id": <element_id>,\n'
+            '  "action": "tap/input",\n'
+            '  "input_text": "<text or N/A>"\n'
+            "}\n\n"
+            "Rules:\n"
+            '- If task is complete: {"finished": "yes", "id": -1}\n'
+            '- For tap: {"finished": "no", "id": <num>, "action": "tap", "input_text": "N/A"}\n'
+            '- For input: {"finished": "no", "id": <num>, "action": "input", "input_text": "<text>"}\n\n'
+            "Your JSON response:"
+        )
+        return prompt_text
 
     def build_history(self, step_results: List[StepResult], app_name: str) -> str:
         """构造历史动作"""
@@ -158,96 +173,120 @@ class OutputParser:
         try:
             output = output.strip()
 
-            # 移除 markdown 代码块
+            output_preview = output[:200] + '...' if len(output) > 200 else output
+            print(f"[DEBUG] Raw output: {output_preview}")
+
             if '```' in output:
                 output = re.sub(r'^```(?:json)?\s*\n?', '', output, flags=re.MULTILINE)
                 output = re.sub(r'\n?```\s*$', '', output, flags=re.MULTILINE)
+                output = output.strip()
 
-            # 归一化 action 行，移除多余字符
-            if '"action"' in output:
-                lines = output.split('\n')
-                norm_lines = []
-                for line in lines:
-                    if '"action"' in line:
-                        m = re.search(r'"action"\s*:\s*"([^"]*)"', line)
-                        if m:
-                            action_val = m.group(1)
-                            line = f'  "action": "{action_val}",'
-                    norm_lines.append(line)
-                output = '\n'.join(norm_lines)
+            if '"input_text"' in output and len(output) > 500:
+                input_text_match = re.search(r'"input_text"\s*:\s*"([^"]{100,})"', output)
+                if input_text_match:
+                    long_text = input_text_match.group(1)
+                    short_text = long_text[:50]
+                    output = output.replace(f'"{long_text}"', f'"{short_text}"')
+                    print(f"[WARN] Truncated long input_text from {len(long_text)} to 50 chars")
 
-            # 修复重复的 action 字段
-            if output.count('"action"') > 1:
-                lines = output.split('\n')
-                new_lines = []
-                action_seen = False
-                for line in lines:
-                    if '"action"' in line and not action_seen:
-                        if line.count('"') % 2 != 0:
-                            line = re.sub(r'"action"\s*:\s*"[^"]*$', '"action": "tap"', line)
-                        new_lines.append(line)
-                        action_seen = True
-                    elif '"action"' not in line:
-                        new_lines.append(line)
-                output = '\n'.join(new_lines)
+            quote_count = output.count('"')
+            if quote_count % 2 != 0:
+                output = re.sub(r'"[^"]*$', '""', output)
+                if not output.endswith('}'):
+                    output = output.rstrip(',\n ') + '}'
 
-            # 去掉重复的逗号导致的非法 JSON
+            json_match = re.search(r'\{[^}]*\}', output, re.DOTALL)
+            if json_match:
+                output = json_match.group(0)
+
             while ',,' in output:
                 output = output.replace(',,', ',')
 
-            # 修复未闭合的 action 字段
-            if '"action"' in output:
-                action_match = re.search(r'"action"\s*:\s*"([^"]*?)(?:"|,|\n|$)', output, re.DOTALL)
-                if action_match:
-                    action_val = action_match.group(1)
-                    if 'click(' in action_val or 'tap(' in action_val or '<element' in action_val:
-                        output = re.sub(
-                            r'"action"\s*:\s*"[^"]*?(?:click|tap|<element).*?(?:"|,|\n)',
-                            '"action": "tap",',
-                            output,
-                            flags=re.DOTALL
-                        )
+            output = re.sub(r',(\s*[}\]])', r'\1', output)
 
-            # 确保 JSON 完整
             if not output.endswith('}'):
-                output = output.rstrip(',\n ') + '\n}'
+                output = output.rstrip(',\n ') + '}'
 
-            # 解析 JSON
             data = json.loads(output)
 
-            # 检查是否完成
             finished = str(data.get('finished', '')).lower() in ['yes', 'y', 'true', '1']
-            if finished:
+            action_raw = str(data.get('action', '')).lower()
+
+            if finished or 'finish' in action_raw or 'complete' in action_raw or action_raw == 'end':
                 return {'action': 'end', 'id': -1, 'input': 'N/A'}
 
-            # 解析字段
             elem_id = data.get('id', -1)
             if isinstance(elem_id, str):
-                if elem_id.lower() in ['n/a', 'none', '']:
+                elem_id_str = elem_id.lower().strip()
+                if elem_id_str in ['n/a', 'none', '', '-1']:
                     elem_id = -1
                 else:
                     try:
                         elem_id = int(elem_id)
-                    except:
+                    except Exception:
                         elem_id = -1
 
-            action = str(data.get('action', 'tap')).lower()
-            if any(k in action for k in ['tap', 'click', 'check', 'select']):
-                action = 'tap'
-            elif any(k in action for k in ['input', 'type', 'enter']):
+            try:
+                elem_id = int(elem_id)
+            except Exception:
+                elem_id = -1
+
+            action = 'tap'
+            if any(k in action_raw for k in ['input', 'type', 'enter', 'text']):
                 action = 'input'
+            elif any(k in action_raw for k in ['tap', 'click', 'press', 'check', 'select']):
+                action = 'tap'
             elif elem_id == -1:
                 action = 'end'
 
             input_text = str(data.get('input_text', 'N/A'))
+
+            if len(input_text) > 100:
+                input_text = input_text[:100]
+                print(f"[WARN] Truncated input_text to 100 chars")
+
             if input_text.lower() in ['n/a', 'none', 'null', '']:
                 input_text = 'N/A'
 
             return {'action': action, 'id': int(elem_id), 'input': input_text}
 
+        except json.JSONDecodeError as e:
+            print(f"[PARSE ERROR] JSON decode failed: {e}")
+            output_preview = output[:300] if len(output) > 300 else output
+            print(f"Output (first 300 chars): {output_preview}")
+
+            try:
+                action_match = re.search(r'"action"\s*:\s*"([^"]{0,50})', output)
+                id_match = re.search(r'"id"\s*:\s*["\']?(-?\d+)', output)
+                finished_match = re.search(r'"finished"\s*:\s*"(yes|no)"', output, re.IGNORECASE)
+
+                if finished_match and finished_match.group(1).lower() == 'yes':
+                    return {'action': 'end', 'id': -1, 'input': 'N/A'}
+
+                action = 'tap'
+                if action_match:
+                    action_val = action_match.group(1).lower()
+                    if 'click' in action_val or 'tap' in action_val:
+                        action = 'tap'
+                    elif 'input' in action_val:
+                        action = 'input'
+                    elif 'finish' in action_val:
+                        action = 'end'
+
+                elem_id = -1
+                if id_match:
+                    elem_id = int(id_match.group(1))
+
+                return {'action': action, 'id': elem_id, 'input': 'N/A'}
+            except Exception as fallback_error:
+                print(f"[PARSE ERROR] Fallback parsing failed: {fallback_error}")
+
+            return {'action': 'end', 'id': -1, 'input': 'N/A'}
+
         except Exception as e:
-            print(f"[PARSE ERROR] {e}")
-            print(f"Output: {output[:200]}")
+            print(f"[PARSE ERROR] Unexpected error: {e}")
+            output_preview = output[:200] if len(output) > 200 else output
+            print(f"Output: {output_preview}")
             return {'action': 'end', 'id': -1, 'input': 'N/A'}
 
 
@@ -286,7 +325,6 @@ class Evaluator:
         self.screenshot_log_file.touch(exist_ok=True)
         self.all_task_results: List[TaskResult] = []
         self.state_image_cache: Dict[str, Dict[str, Path]] = {}
-        self._disable_images_globally = False
 
     def load_dataset(self) -> Dict[str, List[Path]]:
         """加载数据集"""
@@ -314,7 +352,6 @@ class Evaluator:
         events_dir = self.dataset_root / app_name / "events"
         states_dir = self.dataset_root / app_name / "states"
 
-        # 1) 优先尝试事件同名 PNG
         if events_dir.exists():
             for event_file in sorted(events_dir.glob("*.json")):
                 png_path = event_file.with_suffix(".png")
@@ -336,7 +373,6 @@ class Evaluator:
                         print(f"[WARN] Failed to load event {event_file.name}: {e}")
                     continue
 
-        # 2) 再尝试 states 目录：state_* 配 screen_* (同时间戳)
         if states_dir.exists():
             for state_file in sorted(states_dir.glob("state_*.json")):
                 tag = state_file.stem.replace("state_", "")
@@ -367,6 +403,7 @@ class Evaluator:
 
     @staticmethod
     def debug_missing_screenshot(app_name: str, state_hashes: List[str], state_image_map: Dict[str, Path]):
+        """调试缺失的截图"""
         missing = [h for h in state_hashes if h not in state_image_map]
         if missing:
             print(f"[DEBUG] No screenshot for app={app_name}, hashes={missing}")
@@ -384,20 +421,12 @@ class Evaluator:
                 print(f"[WARN] Failed to log screenshot {image_path}: {e}")
 
     def query_llm(self, prompt: str, identifier: str = "", image_path: Optional[Path] = None) -> str:
-        """
-        使用与你提供的 inference_chat_llama_cpp 相同的请求格式，
-        能够稳定发送 screenshot 到 llama.cpp。
-        """
-
-        import requests
-
-        # 构造 messages
+        """查询 LLM"""
         content_items = [{"type": "text", "text": prompt}]
 
-        # 如果有图片，则压缩后附加 image_url（data uri）
         if image_path is not None and image_path.exists():
             try:
-                b64 = load_and_resize_image(image_path)  # <-- 我们前面写好的压缩函数
+                b64 = load_and_resize_image(image_path)
                 data_uri = f"data:image/jpeg;base64,{b64}"
 
                 content_items.append({
@@ -405,14 +434,12 @@ class Evaluator:
                     "image_url": {"url": data_uri}
                 })
 
-                # 日志
                 self.log_screenshot(image_path, identifier)
 
             except Exception as e:
                 if self.verbose:
                     print(f"[WARN] screenshot encode failed for {identifier}: {e}")
 
-        # openai-compatible chat format
         messages = [{
             "role": "user",
             "content": content_items
@@ -425,9 +452,8 @@ class Evaluator:
             "stream": False
         }
 
-        # 发送请求
         try:
-            res = requests.post(self.llm_api_url, json=payload, timeout=900)
+            res = requests.post(self.llm_api_url, json=payload, timeout=90)
             if res.status_code != 200:
                 print(f"[Error] LLM Response: {res.text}")
             res.raise_for_status()
@@ -437,7 +463,6 @@ class Evaluator:
         except Exception as e:
             print(f"[ERROR] {identifier}: {e}")
             return json.dumps({"finished": "yes", "id": -1})
-
 
     def evaluate_step(
         self,
@@ -449,7 +474,6 @@ class Evaluator:
         latency: float
     ) -> StepResult:
         """评估单个步骤"""
-        # 确定 GT 动作类型
         if gt_record.choice == -1:
             gt_action = 'end'
         elif gt_record.input_text != 'null':
@@ -457,11 +481,9 @@ class Evaluator:
         else:
             gt_action = 'tap'
 
-        # 判断正确性
         element_correct = (llm_output['id'] == gt_record.choice)
         action_correct = (llm_output['action'] == gt_action)
 
-        # 判断输入
         if gt_record.input_text != 'null':
             input_correct = (
                 llm_output['action'] == 'input' and
@@ -506,10 +528,8 @@ class Evaluator:
             if self.verbose:
                 print(f"\n--- Step {step_idx + 1}/{len(task_profile.records)} ---")
 
-            # 构造 history
             history = self.prompt_builder.build_history(step_results, task_profile.app_name)
 
-            # 构造 prompt
             prompt = self.prompt_builder.build_prompt(
                 task_name=task_profile.task_name,
                 app_name=task_profile.app_name,
@@ -521,7 +541,6 @@ class Evaluator:
                 gt_action = 'end' if gt_record.choice == -1 else ('input' if gt_record.input_text != 'null' else 'tap')
                 print(f"GT:   {gt_action}, id={gt_record.choice}, input={gt_record.input_text}")
 
-            # 调用 LLM 并计时
             identifier = f"{task_profile.app_name}/{task_profile.task_name}/step_{step_idx}"
             image_path = self.find_screenshot(gt_record.state_strs, state_image_map)
             if self.verbose and image_path:
@@ -529,19 +548,17 @@ class Evaluator:
             elif self.verbose:
                 self.debug_missing_screenshot(task_profile.app_name, gt_record.state_strs, state_image_map)
                 print("Screenshot: None found for this step")
-            
+
             step_start_time = time.time()
             raw_output = self.query_llm(prompt, identifier, image_path=image_path)
             step_latency = time.time() - step_start_time
 
-            # 解析输出
             llm_output = self.parser.parse(raw_output)
 
             if self.verbose:
                 print(f"Pred: {llm_output['action']}, id={llm_output['id']}, input={llm_output['input']}")
                 print(f"Latency: {step_latency:.2f}s")
 
-            # 评估
             step_result = self.evaluate_step(step_idx, gt_record, llm_output, prompt, raw_output, step_latency)
             step_results.append(step_result)
 
@@ -551,7 +568,6 @@ class Evaluator:
 
         task_total_latency = time.time() - task_start_time
 
-        # 计算任务级别指标
         action_correct = sum(1 for r in step_results if r.action_correct)
         element_correct = sum(1 for r in step_results if r.element_correct)
         input_correct = sum(1 for r in step_results if r.input_correct)
@@ -631,7 +647,6 @@ class Evaluator:
         step_correct = sum(r.step_correct_count for r in self.all_task_results)
         task_success = sum(1 for r in self.all_task_results if r.task_success)
 
-        # 输入准确率
         input_total = 0
         input_correct = 0
         for r in self.all_task_results:
@@ -641,10 +656,9 @@ class Evaluator:
                     if s.input_correct:
                         input_correct += 1
 
-        # 延迟统计
         total_latency = sum(r.total_latency for r in self.all_task_results)
         avg_task_latency = total_latency / total_tasks if total_tasks > 0 else 0
-        
+
         all_step_latencies = []
         for r in self.all_task_results:
             for s in r.step_results:
@@ -674,7 +688,6 @@ class Evaluator:
         """保存结果"""
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
 
-        # 保存详细结果
         detailed_results = []
         for task_result in self.all_task_results:
             detailed_results.append({
@@ -699,7 +712,6 @@ class Evaluator:
         with open(self.output_dir / f'results_{timestamp}.json', 'w') as f:
             json.dump({'metrics': metrics, 'details': detailed_results}, f, indent=2)
 
-        # 打印摘要
         print(f"\n{'='*60}")
         print("EVALUATION SUMMARY")
         print(f"{'='*60}")
@@ -718,13 +730,12 @@ class Evaluator:
 
 
 if __name__ == "__main__":
-    # 评估所有 app
     evaluator = Evaluator(
         dataset_root="./data/user_tasks",
         output_dir="./eval_results",
-        specify_apps=["clock"],  # None = 全部，或 ["navigation", "raw_utgs"]
+        specify_apps=["clock"],
         verbose=True,
-        use_images=False  # llama.cpp 默认关闭图片，若支持多模态可改为 True
+        use_images=False
     )
 
     metrics = evaluator.run_evaluation()

@@ -1,0 +1,12 @@
+# Ignore logs directory
+logs/
+logs/*
+
+# Optional: ignore Python cache and virtual envs
+__pycache__/
+*.pyc
+.env/
+.venv/
+
+# Ignore evaluation results if needed
+eval_results/
