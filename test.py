@@ -432,7 +432,7 @@ class Evaluator:
         }
 
         try:
-            res = requests.post(self.llm_api_url, json=payload, timeout=90)
+            res = requests.post(self.llm_api_url, json=payload, timeout=900)
             if res.status_code != 200:
                 print(f"[Error] LLM Response: {res.text}")
             res.raise_for_status()
