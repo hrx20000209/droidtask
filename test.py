@@ -443,6 +443,39 @@ class Evaluator:
             print(f"[ERROR] {identifier}: {e}")
             return json.dumps({"finished": "yes", "id": -1})
 
+    def query_llm_text_only(self, prompt: str) -> str:
+        """
+        只发送文字内容到 LLM，不附带 screenshot。
+        用法与 query_llm 相同，但无图像输入。
+        """
+
+        messages = [{
+            "role": "user",
+            "content": [
+                {"type": "text", "text": prompt}
+            ]
+        }]
+
+        payload = {
+            "messages": messages,
+            "temperature": self.llm_temperature,
+            "max_tokens": self.llm_max_tokens,
+            "stream": False,
+        }
+
+        try:
+            res = requests.post(self.llm_api_url, json=payload, timeout=900)
+
+            if res.status_code != 200:
+                print(f"[ERROR] LLM Response: {res.text}")
+            res.raise_for_status()
+
+            return res.json()["choices"][0]["message"]["content"]
+
+        except Exception as e:
+            print(f"[ERROR] text_only_query: {e}")
+            return json.dumps({"finished": "yes", "id": -1})
+
     def evaluate_step(
         self,
         step_idx: int,
@@ -529,7 +562,8 @@ class Evaluator:
                 print("Screenshot: None found for this step")
 
             step_start_time = time.time()
-            raw_output = self.query_llm(prompt, identifier, image_path=image_path)
+            # raw_output = self.query_llm(prompt, identifier, image_path=image_path)
+            raw_output = self.query_llm_text_only(prompt)
             step_latency = time.time() - step_start_time
 
             llm_output = self.parser.parse(raw_output)
