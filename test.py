@@ -12,7 +12,7 @@ from typing import Dict, List, Optional, Any
 from dataclasses import dataclass
 import yaml
 from datetime import datetime
-from utils import load_and_resize_image
+from utils import load_and_resize_image, crop_and_reassemble
 
 
 @dataclass
@@ -404,7 +404,8 @@ class Evaluator:
 
         if image_path is not None and image_path.exists():
             try:
-                b64 = load_and_resize_image(image_path)
+                # b64 = load_and_resize_image(image_path)
+                b64 = crop_and_reassemble(image_path)
                 data_uri = f"data:image/jpeg;base64,{b64}"
 
                 content_items.append({
