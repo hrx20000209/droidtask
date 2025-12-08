@@ -137,6 +137,7 @@ class PromptBuilder:
         )
         return prompt_text
 
+
     def build_history(self, step_results: List[StepResult], app_name: str) -> str:
         """构造历史动作"""
         if not step_results:
@@ -574,8 +575,8 @@ class Evaluator:
                 print("Screenshot: None found for this step")
 
             step_start_time = time.time()
-            # raw_output = self.query_llm(prompt, identifier, image_path=image_path)
-            raw_output = self.query_llm_text_only(prompt)
+            raw_output = self.query_llm(prompt, identifier, image_path=image_path)
+            # raw_output = self.query_llm_text_only(prompt)
             step_latency = time.time() - step_start_time
 
             llm_output = self.parser.parse(raw_output)
